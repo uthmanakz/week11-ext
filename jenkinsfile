@@ -47,9 +47,10 @@ pipeline {
                 steps {
                     script {
                         withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'PLAYBOOK_KEY')]) {
-                            sh """
+                            sh '''
                             ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key $PLAYBOOK_KEY ansible.yml'
-                            """
+                            '''
+                        
                     }
 
                     }
