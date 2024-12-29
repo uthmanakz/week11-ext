@@ -48,7 +48,7 @@ pipeline {
                 steps{
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 ' sudo yum install python -y && sudo yum install pip -y && pip install ansible'
+                        ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
                         '''
                     }
                 }
@@ -56,9 +56,9 @@ pipeline {
 
             stage ('Deploying Playbook') {
                 steps {
-                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
+                     withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'KEY_FOR_ANSIBLE')]) {
                             sh '''
-                            echo "$SSH_PRIVATE_KEY" >> playbook_key && chmod 600 playbook_key
+                            echo "${KEY_FOR_ANSIBLE}" >> playbook_key && chmod 600 playbook_key
                             scp -o StrictHostKeyChecking=no playbook_key ec2-user@18.130.149.14:ansible-CM
                             ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key playbook_key ansible.yml'
                             '''
