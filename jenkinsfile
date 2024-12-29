@@ -59,6 +59,7 @@ pipeline {
                      sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                             sh '''
                             echo "$SSH_PRIVATE_KEY" >> playbook_key && chmod 600 playbook_key
+                            scp -o StrictHostKeyChecking=no playbook_key ec2-user@18.130.149.14:ansible-CM
                             ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key playbook_key ansible.yml'
                             '''
                         
