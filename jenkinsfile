@@ -9,7 +9,7 @@ pipeline {
             stage ('Terraform init') {
                 steps {
                     sh '''
-                terraform init
+                terraform init -input=false -migrate-state
                 '''
                 }
             }
