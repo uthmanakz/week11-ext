@@ -9,7 +9,7 @@ pipeline {
             stage ('Terraform init') {
                 steps {
                     sh '''
-                terraform init -reconfigure
+                terraform init -input=false
 
                 '''
                 }
