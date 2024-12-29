@@ -31,6 +31,16 @@ pipeline {
                 }
             }
 
+            stage ('Moving local directory into ansible machine') {
+                steps {
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
+                        sh'''
+                        scp -o StrictHostKeyChecking=no -r ansible-CM ec2-user@13.42.56.83:~
+                        '''
+                    }
+                }
+            }
+
              
         }
     
