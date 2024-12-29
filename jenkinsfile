@@ -41,13 +41,17 @@ pipeline {
                 }
             }
 
-            stage ('Installing Nginx then Starting it on web-nodes') {
+            stage ('Deploying Playbook') {
                 steps {
-                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@13.42.56.83 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key uthmanakz.pem ansible.yml'
-                        '''
+                    script {
+                        withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'playbook.key')]) {
+                            sh '''
+                            ssh -o StrictHostKeyChecking=no ec2-user@13.42.56.83 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key $playbook.key ansible.yml'
+                            '''
                     }
+
+                    }
+                   
                 }
             }
 
