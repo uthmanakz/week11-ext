@@ -7,21 +7,28 @@ pipeline {
 
         stages {
             stage ('Terraform init') {
-                sh '''
+                steps {
+                    sh '''
                 terraform init
                 '''
+                }
             }
 
-            stage ('Terraform plan') {
-                sh '''
+            stage ('Terraform plan') { 
+                steps {
+                    sh '''
                 terraform plan
                 '''
+                 }
+                
             }
 
             stage ('Terraform apply') {
-                sh '''
+                steps {
+                     sh '''
                 terraform apply -auto-approve
                 '''
+                }
             }
 
              
