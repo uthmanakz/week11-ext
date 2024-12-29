@@ -56,11 +56,11 @@ pipeline {
 
             stage ('Deploying Playbook') {
                 steps {
-                     withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'KEY_FOR_ANSIBLE')]) {
+                     withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'PLAYBOOK_KEY')]) {
                             sh '''
-                            echo "${KEY_FOR_ANSIBLE}" >> playbook_key && chmod 600 playbook_key
-                            scp -o StrictHostKeyChecking=no playbook_key ec2-user@18.130.149.14:ansible-CM
-                            ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key playbook_key ansible.yml'
+                            chmod 600 $PLAYBOOK_KEY
+                            scp -o StrictHostKeyChecking=no $PLAYBOOK_KEY ec2-user@18.130.149.14:ansible-CM
+                            ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key $PLAYBOOK_KEY ansible.yml'
                             '''
                         
                     }
