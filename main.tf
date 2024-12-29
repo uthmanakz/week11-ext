@@ -10,7 +10,7 @@ resource "aws_instance" "webnodes" {
   key_name      = "simbababy"
 
   tags = {
-    Nmae = "web-server-${count.index + 1}"
+    Name = "web-server-${count.index + 1}"
   }
 
 }
@@ -26,5 +26,9 @@ resource "null_resource" "ansible-inventory" {
   }
 
 
+}
+
+output "public_ip_webnodes" {
+    value = aws_instance.webnodes.*.public_ip
 }
 

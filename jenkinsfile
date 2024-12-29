@@ -35,7 +35,7 @@ pipeline {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
-                        scp -o StrictHostKeyChecking=no -r ansible-CM ec2-user@13.40.184.49:~
+                        scp -o StrictHostKeyChecking=no -r ansible-CM ec2-user@18.130.149.14:~
                         '''
                     }
                 }
@@ -46,7 +46,7 @@ pipeline {
                     script {
                         withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'playbook.key')]) {
                             sh '''
-                            ssh -o StrictHostKeyChecking=no ec2-user@13.40.184.49 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key $playbook.key ansible.yml'
+                            ssh -o StrictHostKeyChecking=no ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key $playbook.key ansible.yml'
                             '''
                     }
 
