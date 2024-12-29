@@ -1,6 +1,6 @@
 ---
 - name: INstalling Nginx
-  hosts: web-servers
+  hosts: web-server
   become: true
   
   tasks:
