@@ -5,19 +5,34 @@ pipeline {
             AWS_SECRET_ACCESS_KEY = credentials ('AWS_SECRET_ACCESS_KEY')
         }
 
+        parameters {
+            choice (choices : 'ALL\nINFRA\nAPP\nUPDATE' , description : 'this is to set conditions for pipeline' name : 'deploy_options') 
+        }
+
         stages {
             stage ('Terraform init') {
+                 when {
+                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                }
                 steps {
+                    script {
+                        echo "${params.deploy_options}"
+                    }
                     sh '''
-                terraform init 
-
-
-                '''
+                    terraform init
+                    '''
+                
                 }
             }
 
             stage ('Terraform plan') { 
+                when {
+                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                }
                 steps {
+                     when {
+                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                }
                     sh '''
                 terraform plan
                 '''
@@ -26,6 +41,9 @@ pipeline {
             }
 
             stage ('Terraform apply') {
+                 when {
+                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                }
                 steps {
                      sh '''
                 terraform apply -auto-approve
@@ -34,20 +52,28 @@ pipeline {
             }
 
                 stage ('Downloading Python') {
+                    when {
+                        expression {params.deploy_options == 'ALL' || params.deploy_options == 'APP'}
+                    }
                 steps{
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@35.179.173.93 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
+                        ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                        ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
                         '''
                     }
                 }
             }
 
             stage ('Git cloning ansible-playbook code') {
+                when {
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE' }
+                }
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
-                        ssh -o StrictHostKeyChecking=no ec2-user@35.179.173.93 '
+                        ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                        ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node '
                         sudo yum update -y && 
                         sudo yum install git -y && 
                         git clone https://github.com/uthmanakz/playbook-nginx.git'
@@ -59,26 +85,36 @@ pipeline {
         
 
             stage ('Adding inventory in file') {
+                when {
+                    parameters {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE'}
+                }
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                        sh '''
-                     ssh -o StrictHostKeyChecking=no ec2-user@35.179.173.93 '
-                     cd playbook-nginx && 
-                     echo "[web-server]" > inventory.ini &&
-                     echo "biibbibb" >> inventory.ini &&
-                     echo "knonono" >> inventory.ini'
-                     '''
+                       ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                       webnode1=`terraform output | grep public_ip_webnodes1 | awk -F '"' '{print $2}'`
+                       webnode2=`terraform output | grep public_ip_webnodes2 | awk -F '"' '{print $2}'`
+                       ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node '
+                       cd playbook-nginx && 
+                       echo "[web-server]" > inventory.ini &&
+                       echo "$webnode1" >> inventory.ini &&
+                       echo "$webnode2" >> inventory.ini'
+                       '''
                     }
                 }
             }
 
             stage ('Deploying Playbook') {
+                when {
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE'}
+                }
                 steps {
                      withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'PLAYBOOK_KEY')]) {
                             sh '''
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@35.179.173.93 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
-                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@35.179.173.93:playbook-nginx/playbook_key.pem
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@35.179.173.93 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml --extra-vars '"'"'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'"'"''
+                            ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
+                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@$ansible_node:playbook-nginx/playbook_key.pem
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml --extra-vars '"'"'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'"'"''
                             '''
                         
                     }

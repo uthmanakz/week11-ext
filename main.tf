@@ -15,20 +15,13 @@ resource "aws_instance" "webnodes" {
 
 }
 
-resource "null_resource" "ansible-inventory" {
-  depends_on = [aws_instance.webnodes]
-
-  provisioner "local-exec" {
-    command = <<EOF
-        echo "[web-server]" > ansible-CM/inventory.ini
-        echo "${join("\n", aws_instance.webnodes.*.public_ip)}" >> ansible-CM/inventory.ini
-        EOF
-  }
 
 
+output "public_ip_webnodes1" {
+    value = aws_instance.webnodes.0.public_ip
+}
+output "public_ip_webnodes2" {
+    value = aws_instance.webnodes.1.public_ip
 }
 
-output "public_ip_webnodes" {
-    value = aws_instance.webnodes.*.public_ip
-}
 
