@@ -67,7 +67,6 @@ pipeline {
                      echo "[web-server]" > inventory.ini &&
                      echo "biibbibb" >> inventory.ini &&
                      echo "knonono" >> inventory.ini'
-
                      '''
                     }
                 }
