@@ -37,7 +37,9 @@ pipeline {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
-                        ssh -o StrictHostKeyChecking=no ec2-user@18.175.171.226 'sudo yum update -y && sudo yum install git -y && git clone https://github.com/uthmanakz/playbook-nginx.git'
+                        ssh -o StrictHostKeyChecking=no ec2-user@18.175.171.226 'sudo yum update -y && \
+                        sudo yum install git -y && \
+                        git clone https://github.com/uthmanakz/playbook-nginx.git'
                         '''
                     }
                 }
