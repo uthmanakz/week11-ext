@@ -48,7 +48,7 @@ pipeline {
                 }
             }
 
-                stage ('Downloading Python') {
+                stage ('Installing Ansible') {
                     when {
                         expression {params.deploy_options == 'ALL' || params.deploy_options == 'APP'}
                     }
@@ -62,9 +62,9 @@ pipeline {
                 }
             }
 
-            stage ('Git cloning ansible-playbook code') {
+            stage ('Git cloning ansible-playbook file to Ansible node') {
                 when {
-                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE' }
+                    expression {params.deploy_options == 'UPDATE' }
                 }
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
