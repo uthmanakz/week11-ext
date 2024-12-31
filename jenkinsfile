@@ -12,7 +12,7 @@ pipeline {
         stages {
             stage ('Terraform init') {
                  when {
-                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'INFRA'}
                 }
                 steps {
                     script {
@@ -27,13 +27,10 @@ pipeline {
 
             stage ('Terraform plan') { 
                 when {
-                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'INFRA'}
                 }
                 steps {
-                     when {
-                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
-                }
-                    sh '''
+                sh '''
                 terraform plan
                 '''
                  }
@@ -42,7 +39,7 @@ pipeline {
 
             stage ('Terraform apply') {
                  when {
-                    expression {params.deploy_options == 'ALL' params.deploy_options == 'INFRA'}
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'INFRA'}
                 }
                 steps {
                      sh '''
@@ -86,7 +83,7 @@ pipeline {
 
             stage ('Adding inventory in file') {
                 when {
-                    parameters {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE'}
+                    expression {params.deploy_options == 'ALL' || params.deploy_options == 'UPDATE'}
                 }
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
