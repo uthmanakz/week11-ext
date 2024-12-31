@@ -33,11 +33,21 @@ pipeline {
                 }
             }
 
+                stage ('Downloading Python') {
+                steps{
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
+                        sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@13.41.81.176 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
+                        '''
+                    }
+                }
+            }
+
             stage ('Git cloning ansible-playbook code') {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
-                        ssh -o StrictHostKeyChecking=no ec2-user@18.175.171.226 '
+                        ssh -o StrictHostKeyChecking=no ec2-user@13.41.81.176 '
                         sudo yum update -y && 
                         sudo yum install git -y && 
                         git clone https://github.com/uthmanakz/playbook-nginx.git'
@@ -46,12 +56,19 @@ pipeline {
                 }
             }
 
-            stage ('Downloading Python') {
-                steps{
+        
+
+            stage ('Adding inventory in file') {
+                steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@18.175.171.226 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
-                        '''
+                       sh '''
+                     ssh -o StrictHostKeyChecking=no ec2-user@13.41.81.176 '
+                     cd playbook-nginx && 
+                     echo "[web-server]" > inventory.ini &&
+                     echo "biibbibb" >> inventory.ini &&
+                     echo "knonono" >> inventory.ini'
+
+                     '''
                     }
                 }
             }
@@ -60,9 +77,9 @@ pipeline {
                 steps {
                      withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'PLAYBOOK_KEY')]) {
                             sh '''
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@18.130.149.14 'cd ansible-CM && touch playbook_key.pem && chmod 600 playbook_key.pem'
-                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@18.130.149.14:ansible-CM/playbook_key.pem
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@18.130.149.14 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml --extra-vars '"'"'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'"'"''
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@13.41.81.176 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
+                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@13.41.81.176:playbook-nginx/playbook_key.pem
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@13.41.81.176 'cd ansible-CM && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml --extra-vars '"'"'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'"'"''
                             '''
                         
                     }
