@@ -64,7 +64,7 @@ pipeline {
 
             stage ('Git cloning ansible-playbook file to Ansible node') {
                 when {
-                    expression {params.deploy_options == 'UPDATE' }
+                    expression {params.deploy_options == 'UPDATE' || params.deploy_options == 'ALL' }
                 }
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
