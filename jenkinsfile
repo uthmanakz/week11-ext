@@ -111,7 +111,7 @@ pipeline {
                             ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
                             ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
                             scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@$ansible_node:playbook-nginx/playbook_key.pem
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml --extra-vars '"'"'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'"'"''
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml'
                             '''
                         
                     }
@@ -123,3 +123,5 @@ pipeline {
         }
     
 }
+
+
