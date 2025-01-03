@@ -1,3 +1,6 @@
+provider "aws" {
+  region = "eu-west-2"
+}
 module "python" {
   source    = "../modules/compute"
   name      = "PYTHON"
