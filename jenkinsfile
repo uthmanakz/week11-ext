@@ -19,6 +19,7 @@ pipeline {
                         echo "${params.deploy_options}"
                     }
                     sh '''
+                    cd dev
                     terraform init
                     '''
                 
@@ -31,6 +32,7 @@ pipeline {
                 }
                 steps {
                 sh '''
+                cd dev
                 terraform plan
                 '''
                  }
@@ -43,6 +45,7 @@ pipeline {
                 }
                 steps {
                      sh '''
+                     cd dev
                 terraform apply -auto-approve
                 '''
                 }
@@ -55,7 +58,8 @@ pipeline {
                 steps{
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
-                        ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                        cd
+                        ansible_node=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
                         '''
                     }
@@ -69,7 +73,8 @@ pipeline {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
-                        ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
+                        cd dev
+                        ansible_node=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node '
                         sudo yum update -y && 
                         sudo yum install git -y && 
@@ -88,14 +93,15 @@ pipeline {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                        sh '''
-                       ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
-                       webnode1=`terraform output | grep public_ip_webnodes1 | awk -F '"' '{print $2}'`
-                       webnode2=`terraform output | grep public_ip_webnodes2 | awk -F '"' '{print $2}'`
-                       ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node '
+                       cd dev
+                       ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                       NGINX_NODE1=`terraform output | grep NGINX-1 | awk -F '"' '{print $2}'`
+                       NGINX_NODE2=`terraform output | grep NGINX-2 | awk -F '"' '{print $2}'`
+                       ssh -o StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE '
                        cd playbook-nginx && 
                        echo "[web-server]" > inventory.ini &&
-                       echo "$webnode1" >> inventory.ini &&
-                       echo "$webnode2" >> inventory.ini'
+                       echo "$NGINX_NODE1" >> inventory.ini &&
+                       echo "$NGINX_NODE2" >> inventory.ini'
                        '''
                     }
                 }
@@ -108,10 +114,11 @@ pipeline {
                 steps {
                      withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable: 'PLAYBOOK_KEY')]) {
                             sh '''
-                            ansible_node=`terraform output | grep ansible | awk -F '"' '{print $2}'`
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
-                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@$ansible_node:playbook-nginx/playbook_key.pem
-                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ansible_node 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml'
+                            cd dev
+                            ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
+                            scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE:playbook-nginx/playbook_key.pem
+                            ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml'
                             '''
                         
                     }
