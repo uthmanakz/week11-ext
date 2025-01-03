@@ -26,7 +26,7 @@ resource "aws_instance" "ansible" {
    vpc_security_group_ids   = [aws_security_group.ansible_sg.id]
 
   tags = {
-    Nmae = "ANSIBLE"
+    Name = "ANSIBLE"
   }
 }
 
