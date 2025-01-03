@@ -58,7 +58,7 @@ pipeline {
                 steps{
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
-                        cd
+                        cd dev
                         ansible_node=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         ssh -o StrictHostKeyChecking=no ec2-user@$ansible_node 'sudo yum install python -y && sudo yum install pip -y && pip install ansible'
                         '''
