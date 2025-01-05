@@ -128,6 +128,22 @@ EOF
                 }
             }
 
+            stage('Cloning ansible file for python') {
+                steps {
+                    sshagent(crendentials : ['SSH_PRIVATE_KEY']) {
+                        sh '''
+                        ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                        ssh -o StrictHostKeyChecking=no ec2-user@ANSIBLE_NODE '
+                        sudo yum update -y &&
+                        sudo yum install git -y &&
+                        git clone https://github.com/uthmanakz/playbook-python.git'
+                        '''
+                    }
+                }
+            }
+
+        
+
            
 
              
