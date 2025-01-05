@@ -172,6 +172,34 @@ pipeline {
                     }
                 }
             }
+
+            stage('Deploying playbook for python nodes') {
+                steps{
+                    withCredentials([sshUserPrivateKey(credentials : 'SSH_PRIVATE_KEY' , keyFileVariable : 'PYTHON_PLAYBOOK_KEY')]) {
+                        sh'''
+                        cd dev
+                        ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                        ssh -o StrictHostKeyChecking=no -i $PYTHON_PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-python && chmod 600 playbook_key'
+                        scp -o StrictHostKeyChecking=no -i $PYTHON_PLAYBOOK_KEY $PYTHON_PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE:playbook-python/playbook_key
+                        '''
+                    }
+                }
+            }
+
+            stage('pytest check on python machines') {
+                steps {
+                    sshagent(credentials : ['SHH_PRIVATE_KEY']) {
+                        sh '''
+                        cd dev
+                        PYTHON_NODE1=`terrraform output | grep PYTHON-1 | awk -F '"' '{print $2}'`
+                        PYTHON_NODE2=`terrraform output | grep PYTHON-2 | awk -F '"' '{print $2}'`
+                       
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PYTHON_NODE1 'pytest /tmp/hello.py'
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PYTHON_NODE2 'pytest /tmp/hello.py'
+                        '''
+                    }
+                }
+            }
         
 
            
