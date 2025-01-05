@@ -117,6 +117,7 @@ pipeline {
                             sh '''
                             cd dev
                             ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                            
                             ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-nginx && touch playbook_key.pem && chmod 600 playbook_key.pem'
                             scp -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE:playbook-nginx/playbook_key.pem
                             ssh -o StrictHostKeyChecking=no -i $PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-nginx && ansible-playbook -i inventory.ini --private-key playbook_key.pem ansible.yml'
@@ -133,6 +134,7 @@ pipeline {
                         sh '''
                         cd dev
                         ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                        
                         ssh -o StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE '
                         sudo yum update -y &&
                         sudo yum install git -y &&
@@ -189,7 +191,7 @@ pipeline {
 
             stage('pytest check on python machines') {
                 steps {
-                    sshagent(credentials : ['SHH_PRIVATE_KEY']) {
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
                         cd dev
                         PYTHON_NODE1=`terrraform output | grep PYTHON-1 | awk -F '"' '{print $2}'`
