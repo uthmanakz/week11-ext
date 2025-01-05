@@ -130,7 +130,7 @@ EOF
 
             stage('Cloning ansible file for python') {
                 steps {
-                    sshagent(crendentials : ['SSH_PRIVATE_KEY']) {
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
                         ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         ssh -o StrictHostKeyChecking=no ec2-user@ANSIBLE_NODE '
