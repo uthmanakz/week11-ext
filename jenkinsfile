@@ -98,9 +98,9 @@ pipeline {
                        NGINX_NODE1=`terraform output | grep NGINX-1 | awk -F '"' '{print $2}'`
                        NGINX_NODE2=`terraform output | grep NGINX-2 | awk -F '"' '{print $2}'`
                        
-                       ssh -o StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE <<EOF
+                       ssh -o StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE << 'EOF'
                        cd playbook-nginx
-                       echo '[web-server]' > inventory.ini
+                       echo '[web-servers]' > inventory.ini
                        echo "$NGINX_NODE1" >> inventory.ini
                        echo "$NGINX_NODE2" >> inventory.ini
                        EOF
@@ -152,9 +152,9 @@ pipeline {
                         NGINX_NODE1=`terraform output | grep NGINX-1 | awk -F '"' '{print $2}'`
                         NGINX_NODE2=`terraform output | grep NGINX-2 | awk -F '"' '{print $2}'`
                         
-                        ssh o- StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE <<EOF
+                        ssh o- StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE << 'EOF'
                         cd playbook-python
-                        echo "[app-server]" > inventory.ini
+                        echo "[app-servers]" > inventory.ini
                         echo "$NGINX_NODE1" >> inventory.ini
                         echo "$NGINX_NODE2" >> inventory.ini
                         EOF
