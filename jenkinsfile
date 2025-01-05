@@ -194,8 +194,8 @@ pipeline {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
                         cd dev
-                        PYTHON_NODE1=`terrraform output | grep PYTHON-1 | awk -F '"' '{print $2}'`
-                        PYTHON_NODE2=`terrraform output | grep PYTHON-2 | awk -F '"' '{print $2}'`
+                        PYTHON_NODE1=`terraform output | grep PYTHON-1 | awk -F '"' '{print $2}'`
+                        PYTHON_NODE2=`terraform output | grep PYTHON-2 | awk -F '"' '{print $2}'`
                        
                         ssh -o StrictHostKeyChecking=no ec2-user@$PYTHON_NODE1 'pytest /tmp/hello.py'
                         ssh -o StrictHostKeyChecking=no ec2-user@$PYTHON_NODE2 'pytest /tmp/hello.py'
