@@ -60,7 +60,7 @@ resource "aws_security_group" "nginx_sg" {
 }
 
 resource "aws_security_group" "ansible_sg" {
-  name   = "AnsibleSG"
+  name   = "AnsibleSG-NEW"
   vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
 
   ingress {

@@ -14,11 +14,11 @@ output "python" {
 } */
 
 output "PYTHON-1" {
-  value = module.python.private_ip_1
+  value = module.python.public_ip_1
 }
 
 output "PYTHON-2" {
-  value = module.python.private_ip_2
+  value = module.python.public_ip_2
 }
 
 output "NGINX-1" {
@@ -30,4 +30,12 @@ output "NGINX-2" {
 }
 output "ANSIBLE" {
   value = aws_instance.ansible.public_ip
+}
+
+output "NGINX_ID_1" {
+    value = module.nginx.instance_id_1
+}
+
+output "NGINX_ID_2" {
+    value = module.nginx.instance_id_2
 }
