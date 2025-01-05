@@ -175,12 +175,13 @@ pipeline {
 
             stage('Deploying playbook for python nodes') {
                 steps{
-                    withCredentials([sshUserPrivateKey(credentials : 'SSH_PRIVATE_KEY' , keyFileVariable : 'PYTHON_PLAYBOOK_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId : 'SSH_PRIVATE_KEY' , keyFileVariable : 'PYTHON_PLAYBOOK_KEY')]) {
                         sh'''
                         cd dev
                         ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         ssh -o StrictHostKeyChecking=no -i $PYTHON_PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-python && chmod 600 playbook_key'
                         scp -o StrictHostKeyChecking=no -i $PYTHON_PLAYBOOK_KEY $PYTHON_PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE:playbook-python/playbook_key
+                        ssh -o StrictHostKeyChecking=no -i $PYTHON_PLAYBOOK_KEY ec2-user@$ANSIBLE_NODE 'cd playbook-python && ansible-playbook -i inventory.ini --private-key playbook_key playbook.yml'
                         '''
                     }
                 }
