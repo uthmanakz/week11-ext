@@ -165,6 +165,7 @@ pipeline {
                 steps {
                     sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh '''
+                        cd dev
                         ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         scp -o StrictHostKeyChecking=no code/hello.py ec2-user@$ANSIBLE_NODE:playbook-python/
                         '''
