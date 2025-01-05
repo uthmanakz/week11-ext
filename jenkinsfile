@@ -144,18 +144,29 @@ pipeline {
 
             stage(' Adding server in inventory file in ansible playbook-python dir') {
                 steps {
-                    shhagent(credentials : ['SSH_PRIVATE_KEY']) {
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
                         sh'''
                         cd dev
                         ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
                         PYTHON_NODE1=`terraform output | grep PYTHON-1 | awk -F '"' '{print $2}'`
                         PYTHON_NODE2=`terraform output | grep PYTHON-2 | awk -F '"' '{print $2}'`
                         
-                        ssh o- StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE "
+                        ssh -o StrictHostKeyChecking=no ec2-user@$ANSIBLE_NODE "
                         cd playbook-python
                         echo "[app-servers]" > inventory.ini
                         echo "$PYTHON_NODE1" >> inventory.ini
                         echo "$PYTHON_NODE2" >> inventory.ini"
+                        '''
+                    }
+                }
+            }
+
+            stage('Moving python file into ansible playbook-python dir') {
+                steps {
+                    sshagent(credentials : ['SSH_PRIVATE_KEY']) {
+                        sh '''
+                        ANSIBLE_NODE=`terraform output | grep ANSIBLE | awk -F '"' '{print $2}'`
+                        scp -o StrictHostKeyChecking=no code/hello.py ec2-user@$ANSIBLE_NODE:playbook-python/
                         '''
                     }
                 }
